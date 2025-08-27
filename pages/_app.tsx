@@ -8,7 +8,9 @@ export default function MyApp({ Component, pageProps }: AppProps) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Component {...pageProps} />
+      <div style={{ backgroundColor: "#E3E3E3", minHeight: "100vh" }}>
+        <Component {...pageProps} />
+      </div>
     </QueryClientProvider>
   )
 }

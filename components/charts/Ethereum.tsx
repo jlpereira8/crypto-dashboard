@@ -1,7 +1,8 @@
-
+"use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { ResponsiveLine } from "@nivo/line";
+import dynamic from "next/dynamic";
+const ResponsiveLine = dynamic(() => import("@nivo/line").then((m) => m.ResponsiveLine), { ssr: false });
 
 // Types for the chart series
 type Point = { x: string | number | Date; y: number };
@@ -14,7 +15,7 @@ async function fetchETH(days: number, vs: string) {
   return res.json();
 }
 
-export default function EthereumChart({ days = 30, vs = "usd", title = "ETH (30 days)" }: { days?: number; vs?: string; title?: string }) {
+export default function EthereumChart({ days = 7, vs = "usd", title = "ETH" }: { days?: number; vs?: string; title?: string }) {
   const { data, isLoading, isError } = useQuery({
     queryKey: ["eth", days, vs],
     queryFn: () => fetchETH(days, vs),
@@ -34,7 +35,7 @@ export default function EthereumChart({ days = 30, vs = "usd", title = "ETH (30 
   ];
 
   return (
-    <div>
+    <div className="bg-white rounded-lg shadow p-6">
       <h2 className="mb-3 text-2xl font-semibold">{title}</h2>
       <div style={{ height: 400 }}>
         <ResponsiveLine
@@ -42,7 +43,7 @@ export default function EthereumChart({ days = 30, vs = "usd", title = "ETH (30 
           margin={{ top: 40, right: 40, bottom: 50, left: 60 }}
           xScale={{ type: "point" }}
           yScale={{ type: "linear", min: "auto", max: "auto", stacked: false }}
-          axisBottom={{ tickRotation: -45 }}
+          axisBottom={null}
           pointSize={4}
           useMesh
         />

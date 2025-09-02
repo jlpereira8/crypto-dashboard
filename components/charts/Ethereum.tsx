@@ -35,7 +35,7 @@ export default function EthereumChart({ days = 7, vs = "usd", title = "ETH" }: {
   ];
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+   <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 text-gray-900 dark:text-gray-100">
       <h2 className="mb-3 text-2xl font-semibold">{title}</h2>
       <div style={{ height: 400 }}>
         <ResponsiveLine

@@ -47,7 +47,7 @@ export default function XRPChart({
   ];
 
   return (
-    <div className="bg-white rounded-lg shadow p-6 w-full">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 text-gray-900 dark:text-gray-100">
       <h2 className="mb-3 text-2xl font-semibold">{title}</h2>
       <div className="w-full" style={{ height: 400, width: "100%" }}>
         <ResponsiveLine

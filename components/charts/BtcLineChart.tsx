@@ -8,7 +8,7 @@ type Series = { id: string; data: Point[] };
 
 export default function BtcLineChart({ data, days = 7 }: { data: Series[]; days?: number }) {
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 text-gray-900 dark:text-gray-100">
       <h2 className="mb-3 text-2xl font-semibold">Bitcoin</h2>
       <div style={{ height: 400 }}>
         <ResponsiveLine

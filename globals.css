@@ -2,10 +2,263 @@
 @tailwind components;
 @tailwind utilities;
 
-html {
-  @apply bg-[#E3E3E3] text-gray-900;
+/* ==========================================================================
+   Design tokens
+   Single source of truth for colour, elevation and geometry. Tailwind reads
+   these through tailwind.config.js, so no component hardcodes a raw value.
+   Every ink/status pair below meets WCAG AA (>= 4.5:1) on its own surface, and
+   the chart's positive/negative marks clear 3:1 against both card surfaces
+   (measured: 7.54 / 6.55 light, 9.33 / 6.99 dark).
+   ========================================================================== */
+
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+
+  /* Surfaces. The canvas sits a step below the panels, so structure comes from
+     surface contrast rather than from drop shadows. */
+  --color-canvas: #f1f2f4;
+  --color-canvas-veil: rgba(241, 242, 244, 0.8);
+  --color-surface: #ffffff;
+  --color-surface-subtle: #f4f5f7;
+  --color-surface-hover: #f8f9fa;
+  --color-surface-veil: rgba(255, 255, 255, 0.85);
+  /* One step up from the panel, for toolbars and sticky headers. */
+  --color-surface-raised: #fbfbfc;
+
+  /* Lines carry the layout, so there are two weights: a near-invisible
+     internal divider and a stronger panel edge. */
+  --color-border-subtle: rgba(9, 9, 11, 0.05);
+  --color-border: rgba(9, 9, 11, 0.09);
+  --color-border-strong: rgba(9, 9, 11, 0.15);
+  --color-grid: rgba(9, 9, 11, 0.05);
+  --color-axis: rgba(9, 9, 11, 0.12);
+
+  /* Ink */
+  --color-ink: #18181b;
+  --color-ink-secondary: #52525b;
+  --color-ink-muted: #6b6b76;
+
+  /* Accent */
+  --color-accent: #4f46e5;
+  --color-accent-hover: #4338ca;
+  --color-accent-active: #3730a3;
+  --color-accent-ink: #ffffff;
+  --color-accent-text: #4f46e5;
+  --color-accent-soft: #eef0fe;
+  --color-accent-line: rgba(79, 70, 229, 0.4);
+  --color-focus: #4f46e5;
+
+  /* Status — always paired with a glyph + label, never colour alone */
+  --color-positive: #006300;
+  --color-positive-soft: #e7f6e7;
+  --color-positive-line: rgba(0, 99, 0, 0.22);
+  --color-negative: #b42323;
+  --color-negative-soft: #fdecec;
+  --color-negative-line: rgba(180, 35, 35, 0.22);
+  --color-negative-edge: rgba(180, 35, 35, 0.55);
+
+  /* Sheen for skeleton shimmer */
+  --color-sheen: rgba(9, 9, 11, 0.07);
+
+  /* Allocation segments. Three categorical slots plus a neutral for the folded
+     tail — the count that clears every all-pairs colour-vision gate on this
+     surface (validated: worst deutan dE 9.2, worst normal dE 24.0). Aqua sits at
+     2.82:1, relieved by the directly-labelled legend rows beside the ring. */
+  --color-series-1: #2a78d6;
+  --color-series-2: #eb6834;
+  --color-series-3: #1baf7a;
+  --color-series-other: #a1a1aa;
+
+  /* Elevation is almost absent on panels — a hairline does that job. Shadow is
+     reserved for things that genuinely float above the page. */
+  --shadow-xs: 0 1px 1px rgba(9, 9, 11, 0.04);
+  --shadow-card: 0 1px 2px rgba(9, 9, 11, 0.03);
+  --shadow-card-hover: 0 2px 8px -2px rgba(9, 9, 11, 0.08);
+  --shadow-pop: 0 12px 32px -10px rgba(9, 9, 11, 0.16), 0 2px 6px -2px rgba(9, 9, 11, 0.06);
+  --shadow-modal: 0 24px 60px -16px rgba(9, 9, 11, 0.26), 0 6px 16px -6px rgba(9, 9, 11, 0.1);
 }
 
-html.dark {
-  @apply bg-gray-900 text-gray-100;
+.dark {
+  /* Dark is the trading-desk mode: a near-black canvas with panels lifted just
+     enough to read as separate planes. */
+  --color-canvas: #08090b;
+  --color-canvas-veil: rgba(8, 9, 11, 0.8);
+  --color-surface: #121417;
+  --color-surface-subtle: #1a1d21;
+  --color-surface-hover: #191c20;
+  --color-surface-veil: rgba(18, 20, 23, 0.85);
+  --color-surface-raised: #171a1e;
+
+  --color-border-subtle: rgba(255, 255, 255, 0.045);
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-strong: rgba(255, 255, 255, 0.15);
+  --color-grid: rgba(255, 255, 255, 0.05);
+  --color-axis: rgba(255, 255, 255, 0.14);
+
+  --color-ink: #f7f8f8;
+  --color-ink-secondary: #9ea4ad;
+  --color-ink-muted: #808794;
+
+  --color-accent: #5b5bd6;
+  --color-accent-hover: #6a6ae0;
+  --color-accent-active: #7878e8;
+  --color-accent-ink: #ffffff;
+  --color-accent-text: #a5a0ff;
+  --color-accent-soft: #181a33;
+  --color-accent-line: rgba(122, 122, 232, 0.5);
+  --color-focus: #a5a0ff;
+
+  --color-positive: #3fcf5c;
+  --color-positive-soft: #10231a;
+  --color-positive-line: rgba(63, 207, 92, 0.26);
+  --color-negative: #ff6e6e;
+  --color-negative-soft: #2a1416;
+  --color-negative-line: rgba(255, 110, 110, 0.26);
+  --color-negative-edge: rgba(255, 110, 110, 0.6);
+
+  --color-sheen: rgba(255, 255, 255, 0.07);
+
+  /* Same three hues, re-stepped for the dark card surface (all >= 3:1). */
+  --color-series-1: #3987e5;
+  --color-series-2: #d95926;
+  --color-series-3: #199e70;
+  --color-series-other: #565d68;
+
+  /* In dark mode a drop shadow is invisible; a 1px top highlight is what
+     actually reads as "this panel is raised". */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-card: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+  --shadow-card-hover: 0 4px 16px -6px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  --shadow-pop: 0 14px 36px -12px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --shadow-modal: 0 28px 64px -18px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+@layer base {
+  html {
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    /* cv11 = single-storey a, ss01 = alternate digits: Inter's UI-optimised set */
+    font-feature-settings: "cv11", "ss01";
+    font-variant-numeric: proportional-nums;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* One focus treatment for the whole app. `outline` (not ring) so it never
+     fights a parent's background or gets clipped by overflow. */
+  :focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  ::selection {
+    background-color: var(--color-accent-soft);
+    color: var(--color-ink);
+  }
+
+  /* Native controls follow the active theme (date pickers, scrollbars, selects) */
+  :root {
+    color-scheme: light;
+  }
+  .dark {
+    color-scheme: dark;
+  }
+}
+
+@layer components {
+  /* Inherits the parent's radius so it traces buttons, cards and rows alike */
+  .focus-ring:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+
+  /* Inset variant for controls flush against a container edge */
+  .focus-ring-inset:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: -2px;
+  }
+}
+
+@layer utilities {
+  /* Numeric columns and axis ticks only — never a large standalone figure,
+     where equal-width digits read loose. */
+  .nums-tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .scrollbar-slim {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border-strong) transparent;
+  }
+  .scrollbar-slim::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .scrollbar-slim::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-slim::-webkit-scrollbar-thumb {
+    background-color: var(--color-border-strong);
+    border-radius: 9999px;
+  }
+  .scrollbar-slim::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-ink-muted);
+  }
+
+  /* Slightly tighter tracking on dense numeric columns, so long values like
+     "$1,283,954,163,502" don't sprawl. */
+  .nums-tight {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+}
+
+/* iOS: blur the top safe area so content scrolling under the Dynamic Island
+   doesn't read as a hard edge. */
+.ios-top-blur-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--safe-top);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background-color: var(--color-canvas-veil);
+  pointer-events: none;
+  z-index: 60;
+}
+
+@supports (padding: env(safe-area-inset-top)) {
+  .pwa-safe-padding-top {
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
+/* Sticky header pins below the blurred safe area rather than under it */
+.sticky-safe {
+  position: sticky;
+  top: var(--safe-top);
+}
+
+/* Honour the OS motion setting: Framer Motion reads it too (useReducedMotion),
+   this covers CSS transitions and any third-party animation. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

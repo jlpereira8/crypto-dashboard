@@ -39,8 +39,11 @@ export function TopGainersCard({
 }: TopGainersCardProps) {
   const gainers = useMemo(() => topMovers(assets, "gainers", ROW_COUNT), [assets]);
 
+  // `overflow-hidden` is safe here — this card holds no tooltip or popover. It
+  // clips the last row's hover background, which would otherwise square off the
+  // bottom corners.
   return (
-    <Card padding="none">
+    <Card padding="none" className="overflow-hidden">
       <CardHeader bleed>
         <CardTitle>Top gainers</CardTitle>
         <Badge size="sm" className="uppercase">

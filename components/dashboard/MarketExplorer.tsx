@@ -125,9 +125,15 @@ export function MarketExplorer({
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-line px-4 py-2.5 sm:px-5">
         <div className="flex min-w-0 items-baseline gap-2">
           <CardTitle>Market Explorer</CardTitle>
-          <span className="shrink-0 text-micro uppercase text-ink-muted nums-tabular">
-            {isLoading ? "Loading" : `${formatInteger(view.total)} of ${formatInteger(assets?.length ?? 0)}`}
-          </span>
+          {/* Only worth showing when something is actually narrowing the list —
+              otherwise it just restates the footer's own count. */}
+          {(isLoading || view.total !== (assets?.length ?? 0)) && (
+            <span className="shrink-0 text-micro uppercase text-ink-muted nums-tabular">
+              {isLoading
+                ? "Loading"
+                : `${formatInteger(view.total)} of ${formatInteger(assets?.length ?? 0)}`}
+            </span>
+          )}
         </div>
 
         <div

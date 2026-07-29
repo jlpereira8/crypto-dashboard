@@ -59,6 +59,11 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(function Card(
  * Header row. `bleed` pulls it out of a padded panel so its bottom rule spans
  * the full width, and sets it on the raised surface so it reads as a toolbar
  * rather than as more content.
+ *
+ * A bleeding header must round its own top corners: Card carries the radius but
+ * cannot clip its children (an `overflow-hidden` there would cut off the tooltips
+ * some headers contain), so an opaque full-width band would otherwise paint square
+ * corners over it. `inherit` takes Card's own radius, so the two can never drift.
  */
 export function CardHeader({
   className,
@@ -70,7 +75,7 @@ export function CardHeader({
     <div
       className={cn(
         "flex flex-wrap items-center justify-between gap-x-4 gap-y-2.5",
-        bleed && "border-b border-line bg-surface-raised px-4 py-2.5 sm:px-5",
+        bleed && "rounded-t-[inherit] border-b border-line bg-surface-raised px-4 py-2.5 sm:px-5",
         className,
       )}
       {...props}
@@ -80,6 +85,10 @@ export function CardHeader({
   );
 }
 
+/**
+ * Panel heading. Purely typographic, so the workspace regions reuse it for their
+ * own header bands rather than restating the type styles.
+ */
 export function CardTitle({
   as: Tag = "h2",
   className,

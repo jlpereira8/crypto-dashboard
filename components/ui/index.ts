@@ -5,6 +5,8 @@
 
 export { AnimatedNumber } from "./AnimatedNumber";
 export { Badge } from "./Badge";
+export { Callout } from "./Callout";
+export { CodeBlock } from "./CodeBlock";
 export { Button, Spinner } from "./Button";
 export { Card, CardDescription, CardHeader, CardTitle, CardToolbar, StatLabel } from "./Card";
 export { DeltaPill } from "./DeltaPill";
@@ -14,6 +16,7 @@ export { Field } from "./Field";
 export { Input } from "./Input";
 export { Menu } from "./Menu";
 export { CloseButton, Modal } from "./Modal";
+export { PageHeader, PageSection } from "./PageHeader";
 export { Pagination } from "./Pagination";
 export { Portal } from "./Portal";
 export { ChevronDown, Select } from "./Select";
@@ -34,6 +37,7 @@ export type { BadgeTone } from "./Badge";
 export type { ButtonProps } from "./Button";
 export type { CardProps } from "./Card";
 export type { MenuGroupDef, MenuItemDef } from "./Menu";
+export type { CodeSample } from "./CodeBlock";
 export type { SelectOption } from "./Select";
 export type { SegmentedOption } from "./SegmentedControl";
 export type { SortDirection } from "./Table";

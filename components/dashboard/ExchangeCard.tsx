@@ -140,8 +140,8 @@ export function ExchangeCard({ assets, loading, id }: ExchangeCardProps) {
 
   return (
     <>
-      <Card id={id} className="flex flex-col scroll-mt-16">
-        <CardHeader className="mb-3">
+      <Card id={id} padding="none" className="flex flex-col scroll-mt-16">
+        <CardHeader bleed>
           <div>
             <CardTitle>Exchange</CardTitle>
             <CardDescription>Convert between any two tracked assets</CardDescription>
@@ -155,7 +155,9 @@ export function ExchangeCard({ assets, loading, id }: ExchangeCardProps) {
         </CardHeader>
 
         {loading ? (
-          <ExchangeSkeleton />
+          <div className="p-4">
+            <ExchangeSkeleton />
+          </div>
         ) : (
           <form
             noValidate
@@ -163,7 +165,7 @@ export function ExchangeCard({ assets, loading, id }: ExchangeCardProps) {
               event.preventDefault();
               onReview();
             }}
-            className="flex flex-1 flex-col"
+            className="flex flex-1 flex-col p-4"
           >
             {/* ── You send ─────────────────────────────────────────────── */}
             <fieldset className="min-w-0 space-y-2 rounded-lg bg-surface-subtle p-2.5">

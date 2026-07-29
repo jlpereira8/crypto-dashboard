@@ -13,6 +13,12 @@ import { THEME_INIT_SCRIPT } from "../lib/useTheme";
  * preconnects and a render-blocking stylesheet from the critical path, and the
  * `size-adjust` fallback metrics it generates mean no layout shift when the real
  * face swaps in.
+ *
+ * The family is published as a `:root` custom property rather than by putting the
+ * generated class on a wrapper element. Next's own pages-router example uses a
+ * wrapper, but anything rendered through a portal — every Modal and Drawer in this
+ * app mounts on <body> — falls outside it and drops to the browser's default
+ * serif. Declaring it on `:root` means portalled content inherits too.
  */
 const inter = Inter({
   subsets: ["latin"],
@@ -55,37 +61,29 @@ export default function App({ Component, pageProps }: AppProps) {
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="CryptoBay" />
-        {/* Must match --color-canvas in globals.css for both schemes.
-            Distinct `key`s are required: next/head dedupes <meta> by `name`, so
-            without them the second tag silently replaces the first and only one
-            scheme gets a colour. */}
-        <meta
-          key="theme-color-light"
-          name="theme-color"
-          content="#f7f7f8"
-          media="(prefers-color-scheme: light)"
-        />
-        <meta
-          key="theme-color-dark"
-          name="theme-color"
-          content="#08090a"
-          media="(prefers-color-scheme: dark)"
-        />
+        {/* No static theme-color here on purpose: the theme store creates and
+            owns the tag (see lib/useTheme.ts). A declared one isn't reliably in
+            the DOM when the blocking script runs, so its first update was lost. */}
 
         {/* Warm up both origins before React has hydrated: the API, and the
             static CDN the asset logos come from. */}
         <link rel="preconnect" href="https://api.coinpaprika.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://static.coinpaprika.com" crossOrigin="anonymous" />
 
+        {/* Publish the font family globally so portalled overlays inherit it. */}
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `:root{--font-sans:${inter.style.fontFamily};}`,
+          }}
+        />
+
         {/* Applies the stored theme before first paint, so there is no flash */}
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </Head>
 
-      <div className={`${inter.variable} font-sans text-ink antialiased`}>
-        <AppShell routeKey={router.asPath}>
-          <Component {...pageProps} />
-        </AppShell>
-      </div>
+      <AppShell routeKey={router.asPath}>
+        <Component {...pageProps} />
+      </AppShell>
     </QueryClientProvider>
   );
 }

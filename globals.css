@@ -135,6 +135,9 @@
 
 @layer base {
   html {
+    /* Set here rather than on a wrapper element so portalled overlays (Modal,
+       Drawer) inherit the family instead of falling back to a serif. */
+    font-family: theme("fontFamily.sans");
     background-color: var(--color-canvas);
     color: var(--color-ink);
     -webkit-text-size-adjust: 100%;

@@ -79,13 +79,19 @@ export function useGlobalMarket() {
  * of collapsing to a skeleton — except on an asset change, where a skeleton is
  * correct because the previous asset's prices would be actively misleading.
  */
+export function assetHistoryQuery(assetId: string, range: RangeId) {
+  return {
+    ...shared,
+    queryKey: ["asset-history", assetId, range] as const,
+    queryFn: ({ signal }: { signal: AbortSignal }) => getAssetHistory(assetId, range, signal),
+    placeholderData: keepPreviousData,
+  };
+}
+
 export function useAssetHistory(assetId: string | undefined, range: RangeId) {
   const query = useQuery({
-    ...shared,
-    queryKey: ["asset-history", assetId, range],
-    queryFn: ({ signal }) => getAssetHistory(assetId as string, range, signal),
+    ...assetHistoryQuery(assetId ?? "", range),
     enabled: Boolean(assetId),
-    placeholderData: keepPreviousData,
   });
 
   return {

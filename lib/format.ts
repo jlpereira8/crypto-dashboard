@@ -107,6 +107,13 @@ export function formatPercent(value: number | null | undefined): string {
   return `${sign}${percent2.format(Math.abs(value))}%`;
 }
 
+/** Signed currency, for P/L figures where the sign carries the meaning. */
+export function formatSignedPrice(value: number | null | undefined): string {
+  if (!isNum(value)) return EM_DASH;
+  const sign = value > 0 ? "+" : value < 0 ? "-" : "";
+  return `${sign}${formatPrice(Math.abs(value))}`;
+}
+
 /** Unsigned percentage — for a share-of-total like BTC dominance. */
 export function formatPercentPlain(value: number | null | undefined): string {
   return isNum(value) ? `${percent2.format(value)}%` : EM_DASH;

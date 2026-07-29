@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { DEFAULT_ASSET_ID, DEFAULT_RANGE, type RangeId } from "../lib/market-api";
 import { findAsset, useAssetHistory, useGlobalMarket, useTopAssets } from "../lib/useMarketData";
+import { usePortfolioValuation } from "../lib/usePortfolio";
 import { ChartWorkspace } from "../components/dashboard/ChartWorkspace";
 import { ExchangeCard } from "../components/dashboard/ExchangeCard";
 import { MarketExplorer } from "../components/dashboard/MarketExplorer";
@@ -43,6 +44,8 @@ export default function OverviewPage() {
 
   const topAssets = useTopAssets();
   const globalMarket = useGlobalMarket();
+  // Values the sample holdings against the same top-50 response — no extra request.
+  const portfolio = usePortfolioValuation();
 
   /**
    * Bitcoin is the default, but if the provider ever drops it from the top 50 we
@@ -106,7 +109,12 @@ export default function OverviewPage() {
         {/* ── Wallet column. Sits on the recessed canvas so its panels read as
                objects placed on the workspace rather than as more of it. ─── */}
         <div className="space-y-3 border-t border-line bg-canvas p-3 xl:border-t-0">
-          <PortfolioCard swapHref={`#${SWAP_ANCHOR_ID}`} />
+          <PortfolioCard
+            valuation={portfolio.valuation}
+            isLoading={portfolio.isLoading}
+            swapHref={`#${SWAP_ANCHOR_ID}`}
+            detailHref="/portfolio"
+          />
           <TopGainersCard
             assets={topAssets.assets}
             selectedId={effectiveId}

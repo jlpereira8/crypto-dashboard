@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useMemo, useRef, useState } from "react";
-import { scaleLinear } from "d3-scale";
+import { scaleLinear, scaleTime } from "d3-scale";
 import { area, curveLinear, line } from "d3-shape";
 import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "../../lib/cn";
@@ -57,6 +57,13 @@ export interface PriceChartProps {
   height?: number;
   /** Change only on asset/range changes, never on refetch. */
   animationKey?: string | number;
+  /**
+   * Formats a value in the tooltip and the accessible summary. Defaults to price
+   * formatting; /status passes a millisecond formatter.
+   */
+  valueFormat?: (value: number) => string;
+  /** Formats axis ticks and the axis tags. Defaults to compact price. */
+  axisFormat?: (value: number) => string;
   className?: string;
 }
 
@@ -96,6 +103,8 @@ export function PriceChart({
   seriesName,
   height = 380,
   animationKey,
+  valueFormat = formatPrice,
+  axisFormat = formatAxisPrice,
   className,
 }: PriceChartProps) {
   const { ref: containerRef, width } = useChartWidth<HTMLDivElement>();
@@ -127,7 +136,11 @@ export function PriceChart({
     const spread = maxY - minY;
     const pad = spread === 0 ? Math.max(Math.abs(maxY) * 0.01, 0.01) : spread * 0.16;
 
-    const x = scaleLinear().domain([minX, maxX]).range([MARGIN.left, MARGIN.left + innerWidth]);
+    // `scaleTime`, not `scaleLinear`: a linear scale over epoch milliseconds picks
+    // "round" tick values in ms (~1.16 days for a week), so labels drift off day
+    // boundaries and a day gets skipped. A time scale ticks on real calendar
+    // units — days here, hours on the 24H range.
+    const x = scaleTime().domain([minX, maxX]).range([MARGIN.left, MARGIN.left + innerWidth]);
     const y = scaleLinear()
       .domain([minY - pad, maxY + pad])
       .range([MARGIN.top + innerHeight, MARGIN.top])
@@ -176,10 +189,10 @@ export function PriceChart({
     return (
       `${seriesName} price chart, ${points.length} points from ` +
       `${formatTimestamp(points[0].x)} to ${formatTimestamp(points[points.length - 1].x)}. ` +
-      `Low ${formatPrice(low)}, high ${formatPrice(high)}. ` +
+      `Low ${valueFormat(low)}, high ${valueFormat(high)}. ` +
       `Use arrow keys to read individual points.`
     );
-  }, [points, seriesName]);
+  }, [points, seriesName, valueFormat]);
 
   const onPointerMove = useCallback(
     (event: React.PointerEvent<SVGSVGElement>) => {
@@ -191,7 +204,7 @@ export function PriceChart({
         Math.max(event.clientX - rect.left, MARGIN.left),
         MARGIN.left + innerWidth,
       );
-      const index = findNearestIndex(points, geometry.x.invert(clamped));
+      const index = findNearestIndex(points, Number(geometry.x.invert(clamped)));
       setHovered((current) =>
         current?.index === index && current.source === "pointer"
           ? current
@@ -306,19 +319,19 @@ export function PriceChart({
                 dominantBaseline="middle"
                 fill="currentColor"
               >
-                {formatAxisPrice(tick)}
+                {axisFormat(tick)}
               </text>
             ))}
             {geometry.xTicks.map((tick, index) => (
               <text
-                key={tick}
+                key={Number(tick)}
                 x={geometry.x(tick)}
                 y={height - 5}
                 // Pull the first label inward so it can't clip the panel edge.
                 textAnchor={index === 0 ? "start" : "middle"}
                 fill="currentColor"
               >
-                {formatAxisDate(tick, geometry.span)}
+                {formatAxisDate(Number(tick), geometry.span)}
               </text>
             ))}
           </g>
@@ -362,7 +375,7 @@ export function PriceChart({
                 x={geometry.axisX + 1}
                 y={geometry.y(lastPoint.y)}
                 width={MARGIN.right - 4}
-                label={formatAxisPrice(lastPoint.y)}
+                label={axisFormat(lastPoint.y)}
                 background={`var(${colorVar})`}
                 foreground="var(--color-canvas)"
               />
@@ -399,7 +412,7 @@ export function PriceChart({
                 x={geometry.axisX + 1}
                 y={geometry.y(activePoint.y)}
                 width={MARGIN.right - 4}
-                label={formatAxisPrice(activePoint.y)}
+                label={axisFormat(activePoint.y)}
                 background="var(--color-ink)"
                 foreground="var(--color-surface)"
               />
@@ -435,7 +448,7 @@ export function PriceChart({
                 style={{ backgroundColor: `var(${colorVar})` }}
               />
               <span className="text-xs font-semibold nums-tabular">
-                {formatPrice(activePoint.y)}
+                {valueFormat(activePoint.y)}
               </span>
             </div>
             <div className="mt-px whitespace-nowrap text-micro uppercase opacity-60 nums-tabular">
@@ -453,7 +466,7 @@ export function PriceChart({
         aria-live={hovered?.source === "keyboard" ? "polite" : "off"}
       >
         {activePoint
-          ? `${seriesName}: ${formatPrice(activePoint.y)} at ${formatTimestamp(activePoint.x)}`
+          ? `${seriesName}: ${valueFormat(activePoint.y)} at ${formatTimestamp(activePoint.x)}`
           : ""}
       </p>
     </div>

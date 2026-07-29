@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useRouter } from "next/router";
 import { cn } from "../../lib/cn";
@@ -6,6 +7,14 @@ import { transition, withReducedMotion } from "../../lib/motion";
 import { Button, Drawer } from "../ui";
 import { SidebarNav } from "./SidebarNav";
 import { sectionTitle } from "./navigation";
+
+/**
+ * Fetched the first time someone reaches for it. It pulls in a form, a modal and
+ * two provider marks that most visits never need.
+ */
+const SignInDialog = dynamic(() => import("./SignInDialog").then((m) => m.SignInDialog), {
+  ssr: false,
+});
 
 export interface AppShellProps {
   /** Changes per route, driving the content transition. */
@@ -40,9 +49,19 @@ export function AppShell({ routeKey, children }: AppShellProps) {
   // while still allowing its exit animation to play afterwards.
   const [drawerMounted, setDrawerMounted] = useState(false);
 
+  const [signInOpen, setSignInOpen] = useState(false);
+  const [signInMounted, setSignInMounted] = useState(false);
+
   const openDrawer = useCallback(() => {
     setDrawerMounted(true);
     setDrawerOpen(true);
+  }, []);
+
+  const openSignIn = useCallback(() => {
+    setSignInMounted(true);
+    setSignInOpen(true);
+    // The drawer is a modal too; two at once would fight over the focus trap.
+    setDrawerOpen(false);
   }, []);
 
   useEffect(() => {
@@ -71,7 +90,7 @@ export function AppShell({ routeKey, children }: AppShellProps) {
           "lg:sticky lg:top-0 lg:block lg:h-screen",
         )}
       >
-        <SidebarNav pathname={pathname} />
+        <SidebarNav pathname={pathname} onSignIn={openSignIn} />
       </aside>
 
       {/* ── Workspace ───────────────────────────────────────────────────── */}
@@ -123,12 +142,17 @@ export function AppShell({ routeKey, children }: AppShellProps) {
         </main>
       </div>
 
+      {signInMounted && (
+        <SignInDialog open={signInOpen} onClose={() => setSignInOpen(false)} />
+      )}
+
       {drawerMounted && (
         <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} title="Menu" flush>
           <SidebarNav
             pathname={pathname}
             showBrand={false}
             onNavigate={() => setDrawerOpen(false)}
+            onSignIn={openSignIn}
           />
         </Drawer>
       )}

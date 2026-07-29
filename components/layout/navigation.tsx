@@ -98,12 +98,25 @@ function StatusIcon({ className }: { className?: string }) {
 
 export const BRAND = "CryptoBay";
 
+/**
+ * Who the shell says you are.
+ *
+ * There is no authentication in this app, so there is no user to read. Naming a
+ * person would imply an account that doesn't exist — "Guest / Not signed in" is
+ * simply true. Kept next to BRAND so the shell's identity strings live in one
+ * place rather than inside JSX.
+ */
+export const ACCOUNT = {
+  name: "Guest",
+  status: "Not signed in",
+} as const;
+
 export const NAV_GROUPS: readonly NavGroup[] = [
   {
     items: [
       { label: "Overview", href: "/", icon: OverviewIcon },
-      { label: "Markets", href: "/markets", icon: MarketsIcon },
       { label: "Portfolio", href: "/portfolio", icon: PortfolioIcon },
+      { label: "Markets", href: "/markets", icon: MarketsIcon },
     ],
   },
   {

@@ -57,6 +57,15 @@ export default function App({ Component, pageProps }: AppProps) {
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <meta name="color-scheme" content="light dark" />
 
+        {/* Icons. `icon.svg` is the reduced mark and stays crisp at any size;
+            favicon.ico (32 + 16) is the fallback for browsers without SVG icon
+            support. apple-touch-icon is the full artwork, which has room to show
+            its detail at 180px. All four live in public/ — which did not exist
+            before, so every one of these paths used to 404. */}
+        <link rel="icon" href="/favicon.ico" sizes="32x32" />
+        <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
         <link rel="manifest" href="/manifest.json" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />

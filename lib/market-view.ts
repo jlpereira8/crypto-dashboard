@@ -9,7 +9,14 @@ import type { Asset } from "./market-api";
  */
 
 export type MarketFilter = "all" | "gainers" | "losers" | "volume";
-export type MarketSortKey = "rank" | "price" | "change24h" | "marketCap" | "volume24h";
+export type MarketSortKey =
+  | "rank"
+  | "price"
+  | "change24h"
+  | "marketCap"
+  | "volume24h"
+  /** 24h volume as a share of market cap — how heavily an asset trades for its size. */
+  | "turnover";
 export type SortDirection = "asc" | "desc";
 
 export interface MarketSort {
@@ -33,6 +40,12 @@ const ACCESSORS: Record<MarketSortKey, (asset: Asset) => number> = {
   change24h: (asset) => asset.change24h ?? -Infinity,
   marketCap: (asset) => asset.marketCap ?? -Infinity,
   volume24h: (asset) => asset.volume24h ?? -Infinity,
+  // Guarded against a zero or missing cap, which would divide to Infinity and
+  // pin an unranked asset to the top of the list.
+  turnover: (asset) =>
+    asset.volume24h && asset.marketCap && asset.marketCap > 0
+      ? asset.volume24h / asset.marketCap
+      : -Infinity,
 };
 
 export interface MarketViewInput {
@@ -151,6 +164,57 @@ export function topMovers(
     })
     .sort((a, b) => ((b.change24h ?? 0) - (a.change24h ?? 0)) * sign)
     .slice(0, count);
+}
+
+export interface MarketBreadth {
+  advancing: number;
+  declining: number;
+  flat: number;
+  /** Assets with a usable 24h figure. Excludes those the provider left null. */
+  measured: number;
+  /** Share of measured assets that are up, 0–100. */
+  advancingShare: number | null;
+  /** Mean 24h change across measured assets. */
+  averageChangePct: number | null;
+}
+
+/**
+ * Market breadth over the loaded list.
+ *
+ * The honest version of a sentiment gauge: how many assets are up versus down,
+ * and by how much on average. Every figure is counted from data already on the
+ * page, so it costs no request — and unlike a proprietary "fear and greed" score,
+ * the reader can see exactly what it measures.
+ *
+ * Assets with no 24h figure are excluded from every count rather than filed as
+ * flat, so `advancing + declining + flat === measured`, which may be fewer than
+ * the assets supplied.
+ */
+export function marketBreadth(assets: Asset[] | undefined): MarketBreadth {
+  let advancing = 0;
+  let declining = 0;
+  let flat = 0;
+  let sum = 0;
+
+  for (const asset of assets ?? []) {
+    const change = asset.change24h;
+    if (typeof change !== "number" || !Number.isFinite(change)) continue;
+    sum += change;
+    if (change > 0) advancing += 1;
+    else if (change < 0) declining += 1;
+    else flat += 1;
+  }
+
+  const measured = advancing + declining + flat;
+
+  return {
+    advancing,
+    declining,
+    flat,
+    measured,
+    advancingShare: measured > 0 ? (advancing / measured) * 100 : null,
+    averageChangePct: measured > 0 ? sum / measured : null,
+  };
 }
 
 /** Low/high across a series, for the chart footer. */

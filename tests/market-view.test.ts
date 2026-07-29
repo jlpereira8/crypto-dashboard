@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   DEFAULT_SORT,
   deriveMarketView,
+  marketBreadth,
   seriesChangePct,
   seriesExtent,
   type MarketSort,
@@ -174,5 +175,52 @@ describe("series helpers", () => {
   it("finds the low and high", () => {
     expect(seriesExtent([{ y: 5 }, { y: 1 }, { y: 9 }])).toEqual({ low: 1, high: 9 });
     expect(seriesExtent([])).toEqual({ low: null, high: null });
+  });
+});
+
+describe("marketBreadth", () => {
+  it("counts advancing, declining and flat assets", () => {
+    // Fixtures: BTC +2.5, XRP +0.4, ETH -1.25, SOL -3.75, ADA 0.
+    const breadth = marketBreadth(ASSETS);
+    expect(breadth.advancing).toBe(2);
+    expect(breadth.declining).toBe(2);
+    expect(breadth.flat).toBe(1);
+    expect(breadth.measured).toBe(5);
+  });
+
+  it("computes the advancing share against measured assets", () => {
+    expect(marketBreadth(ASSETS).advancingShare).toBeCloseTo(40);
+  });
+
+  it("averages the 24h change across measured assets", () => {
+    // (2.5 + 0.4 - 1.25 - 3.75 + 0) / 5
+    expect(marketBreadth(ASSETS).averageChangePct).toBeCloseTo(-0.42);
+  });
+
+  it("excludes a missing change from every count rather than filing it as flat", () => {
+    const assets = [
+      ...ASSETS,
+      makeAsset({ id: "n", symbol: "NUL", name: "Nullish", rank: 9, change24h: null }),
+    ];
+    const breadth = marketBreadth(assets);
+    expect(breadth.measured).toBe(5);
+    expect(breadth.flat).toBe(1);
+    expect(breadth.advancing + breadth.declining + breadth.flat).toBe(breadth.measured);
+  });
+
+  it("returns null shares rather than 0 when nothing is measurable", () => {
+    expect(marketBreadth([]).advancingShare).toBeNull();
+    expect(marketBreadth([]).averageChangePct).toBeNull();
+    expect(marketBreadth(undefined).measured).toBe(0);
+  });
+
+  it("reports a fully advancing market as 100%", () => {
+    const assets = [
+      makeAsset({ id: "a", symbol: "A", name: "A", rank: 1, change24h: 1 }),
+      makeAsset({ id: "b", symbol: "B", name: "B", rank: 2, change24h: 5 }),
+    ];
+    const breadth = marketBreadth(assets);
+    expect(breadth.advancingShare).toBe(100);
+    expect(breadth.declining).toBe(0);
   });
 });

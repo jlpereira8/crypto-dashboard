@@ -5,9 +5,11 @@ import { usePortfolioValuation } from "../lib/usePortfolio";
 import { ChartWorkspace } from "../components/dashboard/ChartWorkspace";
 import { ExchangeCard } from "../components/dashboard/ExchangeCard";
 import { MarketExplorer } from "../components/dashboard/MarketExplorer";
+import { MarketBreadth } from "../components/dashboard/MarketBreadth";
 import { MarketTicker } from "../components/dashboard/MarketTicker";
 import { PortfolioCard } from "../components/dashboard/PortfolioCard";
 import { TopGainersCard } from "../components/dashboard/TopGainersCard";
+import { Watchlist } from "../components/dashboard/Watchlist";
 
 /** Anchor target for the Portfolio card's "Swap assets" link. */
 const SWAP_ANCHOR_ID = "swap";
@@ -80,8 +82,11 @@ export default function OverviewPage() {
       />
 
       <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_21rem]">
-        {/* ── Market column: the hero, then the market ──────────────────── */}
-        <div className="min-w-0 xl:border-r xl:border-line">
+        {/* ── Market column: the hero, then the market ────────────────────
+               A flex column, so the leftover height of the grid row goes to the
+               panel row at the bottom instead of pooling as empty surface below
+               it. Chart and explorer keep their natural heights. */}
+        <div className="flex min-w-0 flex-col xl:border-r xl:border-line">
           <ChartWorkspace
             asset={selectedAsset}
             points={history.points}
@@ -102,6 +107,21 @@ export default function OverviewPage() {
               isRefreshing={topAssets.isRefreshing}
               isError={topAssets.isError}
               onRetry={() => void topAssets.refetch()}
+            />
+          </div>
+
+          {/* Two more workspace regions, not panels: they take the same flush,
+              hairline-bounded treatment as the chart and the table above them.
+              `flex-1` hands them the height this column would otherwise leave
+              empty beside the taller wallet rail. Both derive from the market
+              data already loaded, so neither costs a request. */}
+          <div className="grid flex-1 divide-y divide-line border-t border-line sm:grid-cols-2 sm:divide-x sm:divide-y-0">
+            <MarketBreadth assets={topAssets.assets} isLoading={topAssets.isLoading} />
+            <Watchlist
+              assets={topAssets.assets}
+              selectedId={effectiveId}
+              onSelect={setSelectedId}
+              isLoading={topAssets.isLoading}
             />
           </div>
         </div>

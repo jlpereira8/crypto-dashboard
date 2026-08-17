@@ -54,6 +54,33 @@ export default function App({ Component, pageProps }: AppProps) {
           name="description"
           content="Live cryptocurrency prices, market KPIs and asset conversion."
         />
+        <link rel="canonical" href="https://crypto-dashboard-eosin-phi.vercel.app" />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="CryptoBay" />
+        <meta property="og:title" content="CryptoBay — Market Intelligence Dashboard" />
+        <meta
+          property="og:description"
+          content="Live cryptocurrency prices, portfolio insights, market exploration and asset conversion."
+        />
+        <meta property="og:url" content="https://crypto-dashboard-eosin-phi.vercel.app" />
+        <meta
+          property="og:image"
+          content="https://crypto-dashboard-eosin-phi.vercel.app/og-cryptobay.jpg"
+        />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content="CryptoBay market intelligence dashboard" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="CryptoBay — Market Intelligence Dashboard" />
+        <meta
+          name="twitter:description"
+          content="Live cryptocurrency prices, portfolio insights, market exploration and asset conversion."
+        />
+        <meta
+          name="twitter:image"
+          content="https://crypto-dashboard-eosin-phi.vercel.app/og-cryptobay.jpg"
+        />
+        <meta name="twitter:image:alt" content="CryptoBay market intelligence dashboard" />
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <meta name="color-scheme" content="light dark" />
 
